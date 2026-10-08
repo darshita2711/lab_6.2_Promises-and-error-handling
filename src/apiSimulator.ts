@@ -1,3 +1,5 @@
+import { NetworkError, DataError } from "./error.js";
+
 interface Product {
     id: number;
     name: string;
@@ -13,13 +15,14 @@ export const fetchProductCatalog = (): Promise<Product[]> => {
                     { id: 2, name: "Headphones", price: 200 },
                 ]);
             } else {
-                reject("Failed to fetch product catalog");
+                reject (new NetworkError("Failed to fetch product catalog"));
             }
         }, 1000);
     });
 };
 
 interface Review {
+    id:number;
     rating: number;
 }
 
@@ -27,15 +30,30 @@ export const fetchProductReviews = (productId: number): Promise<Review[]> => {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
             if (Math.random() < 0.8) {
-                resolve([
-                   { rating: 5 },
-                    { rating: 4 },
-                    { rating: 5 }
-                ]);
-            } else {
+                const productReview: Review[] = [
+                    { id: 1, rating: 5 },
+                    { id: 2, rating: 4.5 },
+                    { id: 3, rating: 3 }
+                ];
+
+                for (let i = 0; i < productReview.length; i++) {
+                    if (productId === productReview[i]?.id) {
+                        const review = productReview[i];
+
+                        if (review) {
+                            resolve([review]);
+                            return;
+                        }
+                    }
+                }
+
                 reject(
-                    `Failed to fetch reviews for product ID ${productId}`
+                    new DataError("Product ID was not found")
                 );
+            } else {
+                reject( new NetworkError(
+                    `Failed to fetch reviews for product ID ${productId}`
+                ));
             }
         }, 1500);
     });
@@ -57,7 +75,7 @@ export const fetchSalesReport = (): Promise<SalesReport> => {
                     averagePrice: 300
                 });
             } else {
-                reject("Failed to fetch sales report");
+                reject ( new NetworkError("Failed to fetch sales report"));
             }
         }, 1000);
     });
